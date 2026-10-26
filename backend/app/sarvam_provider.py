@@ -110,6 +110,88 @@ class SarvamProvider:
             print(f"[SarvamProvider] STT Error: {e}")
         return None
 
+    def answer_doubt(self, doubt_text: str, context: Dict[str, Any], language: str = "hi-IN") -> Dict[str, Any]:
+        """
+        Uses Sarvam-105B to answer the applicant's doubt based on active application state and scheme criteria.
+        Then synthesizes Bulbul audio for natural voice output.
+        """
+        is_hindi = "hi" in language
+        
+        # Build institutional grounding summary
+        applicant_name = context.get("applicant_name", "Asha Sharma")
+        programme_name = context.get("programme_name", "Udaan Education Grant")
+        grant_amount = context.get("grant_amount", "₹50,000 / year")
+        progress = f"{context.get('progress_met_count', 3)} of {context.get('progress_total_count', 4)} requirements met ({context.get('progress_percentage', 75)}%)"
+        
+        checks_summary = []
+        for c in context.get("checks", []):
+            checks_summary.append(f"- {c.get('title')}: Status={c.get('status')}. Details: {c.get('explanation')}")
+        checks_text = "\n".join(checks_summary)
+        
+        system_prompt = (
+            f"You are Bulbul, an empathetic, highly knowledgeable, and authoritative voice assistant for Aavedan—an AI portal helping students apply for the {programme_name} ({grant_amount}).\n"
+            f"Current Applicant: {applicant_name}\n"
+            f"Current Application Progress: {progress}\n"
+            f"Active Verification Rules:\n{checks_text}\n\n"
+            "Scheme Rules & Instructions:\n"
+            "1. Family Income Ceiling: Total family annual income must be under ₹2,50,000.\n"
+            "2. Required Income Proof: An official Income Certificate issued by a Tehsildar, Sub-Divisional Magistrate (SDM), or Revenue Department. Self-declarations, oral statements, or uncertified affidavits CANNOT be accepted for income verification under government norms.\n"
+            "3. Academic Eligibility: Minimum 75% marks in class 12th Board examinations.\n"
+            "4. Enrollment: Must be actively enrolled in a recognized undergraduate degree course.\n"
+            "5. To obtain a Tehsildar Income Certificate: Applicants can apply online through their state e-District portal or visit their local Tehsil office / CSC (Common Service Centre) with Aadhaar card, electricity bill, and ration card. Processing usually takes 3 to 7 working days.\n\n"
+            f"Directives:\n"
+            f"- Answer directly to the applicant's doubt in {'Hindi (Devanagari script)' if is_hindi else 'clear Indian English'}.\n"
+            "- Keep the answer concise: strictly 2 to 3 sentences so it can be spoken fluently by Bulbul.\n"
+            "- Be warm, supportive, and precise. Never make up nonexistent rules."
+        )
+
+        answer_text = ""
+        if self.has_key:
+            try:
+                response = self.client.chat.completions(
+                    model=SARVAM_CHAT_MODEL,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": doubt_text}
+                    ],
+                    temperature=0.3,
+                    max_tokens=220
+                )
+                answer_text = response.choices[0].message.content.strip()
+            except Exception as e:
+                print(f"[SarvamProvider] Chat 105B Error: {e}")
+
+        # Fallback if key missing or call failed
+        if not answer_text:
+            if "आय प्रमाण" in doubt_text or "income" in doubt_text.lower() or "tehsildar" in doubt_text.lower():
+                answer_text = (
+                    "आप अपना आय प्रमाण पत्र अपने नजदीकी तहसील कार्यालय या ई-डिस्ट्रिक्ट पोर्टल से बनवा सकते हैं। इसके लिए आधार कार्ड और राशन कार्ड आवश्यक हैं।"
+                    if is_hindi else
+                    "You can obtain an income certificate from your local Tehsil office or state e-District portal. You will need your Aadhaar card and address proof."
+                )
+            elif "दस्तावेज़" in doubt_text or "document" in doubt_text.lower() or "कागजात" in doubt_text:
+                answer_text = (
+                    "उड़ान छात्रवृत्ति के लिए 12वीं की अंकतालिका, कॉलेज प्रवेश प्रमाण पत्र और तहसीलदार द्वारा जारी आय प्रमाण पत्र अनिवार्य हैं।"
+                    if is_hindi else
+                    "Mandatory documents for Udaan Grant include your 12th marksheet, college enrollment slip, and a Tehsildar-certified income certificate."
+                )
+            else:
+                answer_text = (
+                    "आपके आवेदन में वर्तमान में तहसीलदार द्वारा जारी आय प्रमाण पत्र की आवश्यकता है। इसे अपलोड करते ही आपका आवेदन पत्र पूर्ण हो जाएगा।"
+                    if is_hindi else
+                    "Your application currently requires a Tehsildar-certified income certificate. Once uploaded, your application will be 100% complete."
+                )
+
+        # Synthesize Bulbul voice audio
+        audio_b64 = self.generate_tts(answer_text, language=language)
+
+        return {
+            "question": doubt_text,
+            "answer": answer_text,
+            "audio_base64": audio_b64,
+            "language": language
+        }
+
     def extract_facts_105b(self, document_text: str) -> Dict[str, Any]:
         """
         Uses Sarvam-105B to extract structured entities from document Markdown.

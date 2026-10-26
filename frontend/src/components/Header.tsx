@@ -1,12 +1,13 @@
 import React from 'react';
 import type { CaseState, Language, OperatingMode } from '../types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Mic } from 'lucide-react';
 
 interface HeaderProps {
   state: CaseState | null;
   onSetMode: (mode: OperatingMode) => void;
   onSetLanguage: (lang: Language) => void;
   onLoadScenario: (scenarioKey: string) => void;
+  onOpenVoiceModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSetMode,
   onSetLanguage,
   onLoadScenario,
+  onOpenVoiceModal,
 }) => {
   if (!state) return null;
 
@@ -96,6 +98,20 @@ export const Header: React.FC<HeaderProps> = ({
                 🇬🇧 English
               </button>
             </div>
+
+            {/* Bulbul Interactive Voice Mode Trigger */}
+            <button
+              onClick={onOpenVoiceModal}
+              className="px-3.5 py-1.5 rounded-xl bg-forest-700 hover:bg-forest-800 text-white font-semibold text-xs shadow-sm flex items-center gap-2 transition transform active:scale-95 group"
+              title="Open Bulbul Voice Assistant (Sarvam 105B + Bulbul TTS)"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+              </span>
+              <Mic className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition" />
+              <span>{isHindi ? "आवाज़ में पूछें" : "Ask Bulbul"}</span>
+            </button>
 
             {/* Scenario Quick Buttons */}
             <div className="hidden sm:flex items-center gap-1.5 bg-stone-100/90 p-1 rounded-xl border border-stone-200 text-xs">

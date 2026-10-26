@@ -8,6 +8,7 @@ interface GuidanceBannerProps {
   onClarify: (text: string) => void;
   onResolveHero: () => void;
   isPlayingAudio: boolean;
+  onOpenVoiceModal?: () => void;
 }
 
 export const GuidanceBanner: React.FC<GuidanceBannerProps> = ({
@@ -16,6 +17,7 @@ export const GuidanceBanner: React.FC<GuidanceBannerProps> = ({
   onClarify,
   onResolveHero,
   isPlayingAudio,
+  onOpenVoiceModal,
 }) => {
   const [inputText, setInputText] = useState('');
   const isHindi = state.language === 'hi-IN';
@@ -80,6 +82,18 @@ export const GuidanceBanner: React.FC<GuidanceBannerProps> = ({
             <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'text-forest-700 animate-pulse' : 'text-stone-600'}`} />
             <span>{isHindi ? "सुनो (Bulbul TTS)" : "Listen (Bulbul TTS)"}</span>
           </button>
+
+          {/* Ask Bulbul Voice Doubt Button */}
+          {onOpenVoiceModal && (
+            <button
+              onClick={onOpenVoiceModal}
+              className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-xs font-bold text-amber-900 flex items-center gap-2 transition shadow-xs"
+              title="Ask doubts interactively using voice"
+            >
+              <Mic className="w-4 h-4 text-amber-700 animate-pulse" />
+              <span>{isHindi ? "बुलबुल से पूछें (Voice Doubt)" : "Ask Bulbul (Voice Doubt)"}</span>
+            </button>
+          )}
 
           {/* Quick Hero Resolution Trigger (if incomplete) */}
           {!isComplete && (

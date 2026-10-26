@@ -6,13 +6,15 @@ import { RequirementsPanel } from './components/RequirementsPanel';
 import { EvidencePanel } from './components/EvidencePanel';
 import { ApplicationDraftPanel } from './components/ApplicationDraftPanel';
 import { ActivityFeed } from './components/ActivityFeed';
-import { Layers, FileSearch, FileCheck } from 'lucide-react';
+import { VoiceAssistantModal } from './components/VoiceAssistantModal';
+import { Layers, FileSearch, FileCheck, Mic } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<CaseState | null>(null);
   const [selectedRuleId, setSelectedRuleId] = useState<string>('income_ceiling');
   const [activeTab, setActiveTab] = useState<'requirements' | 'evidence' | 'draft'>('requirements');
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Fetch initial case state
@@ -180,6 +182,7 @@ export const App: React.FC = () => {
         onSetMode={handleSetMode}
         onSetLanguage={handleSetLanguage}
         onLoadScenario={handleLoadScenario}
+        onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -192,6 +195,7 @@ export const App: React.FC = () => {
           onClarify={handleClarify}
           onResolveHero={handleResolveHero}
           isPlayingAudio={isPlayingAudio}
+          onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
         />
 
         {/* Mobile Tab Switcher (< 1024px) */}
@@ -265,6 +269,31 @@ export const App: React.FC = () => {
         </div>
 
       </main>
+
+      {/* Floating Bulbul Voice Mode Button (FAB) */}
+      <button
+        onClick={() => setIsVoiceModalOpen(true)}
+        className="fixed bottom-6 right-6 z-40 bg-forest-700 hover:bg-forest-800 text-white px-5 py-3.5 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-2.5 transform hover:scale-105 active:scale-95 group border-2 border-white/20"
+        title="Open Bulbul Voice Assistant"
+      >
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400"></span>
+        </span>
+        <Mic className="w-5 h-5 text-amber-300 group-hover:scale-110 transition" />
+        <span className="font-bold text-xs sm:text-sm tracking-wide">
+          {state.language === 'hi-IN' ? "आवाज़ में पूछें" : "Ask Bulbul"}
+        </span>
+      </button>
+
+      {/* Interactive Bulbul Voice Assistant Modal */}
+      <VoiceAssistantModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        state={state}
+        onRefreshState={fetchState}
+        onSetLanguage={handleSetLanguage}
+      />
 
     </div>
   );
