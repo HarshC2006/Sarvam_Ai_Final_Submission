@@ -1,0 +1,25 @@
+# Environment variables and secrets
+.env
+*.env
+backend/.env
+
+# Databases and private storage
+backend/storage/
+*.db
+*.sqlite3
+
+# Dependencies and virtual environments
+.venv/
+venv/
+node_modules/
+frontend/node_modules/
+
+# Build artifacts
+dist/
+frontend/dist/
+
+# Python cache
+__pycache__/
+*/__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>आवेदन · Aavedan - AI Application Preparation Assistant</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; }
+    @keyframes pulse-green {
+      0%, 100% { background-color: rgb(240 253 244); border-color: rgb(34 197 94); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      50% { background-color: rgb(220 252 231); border-color: rgb(22 163 74); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    }
+    .animate-pulse-green {
+      animation: pulse-green 1.8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Top Navigation & Progress Header -->
+  <header class="bg-slate-850 border-b border-slate-750 px-6 py-4 shadow-lg sticky top-0 z-30 bg-slate-900/95 backdrop-blur">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      
+      <!-- Brand & Tagline -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 text-xl shadow-md shadow-emerald-500/20">
+          आ
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold tracking-tight text-white">आवेदन <span class="text-emerald-400 font-semibold text-sm">· Aavedan</span></h1>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Sarvam AI Powered</span>
+          </div>
+          <p class="text-xs text-slate-400">Scholarship Application & Documentary Evidence Assistant</p>
+        </div>
+      </div>
+
+      <!-- Controls: Bilingual Toggle & Presets -->
+      <div class="flex flex-wrap items-center gap-2">
+        
+        <!-- Change 5: Bilingual Voice Toggle -->
+        <div class="bg-slate-800 p-1 rounded-lg border border-slate-700 flex items-center text-xs">
+          <button id="btn-lang-hi" onclick="setLanguage('hi-IN')" class="px-2.5 py-1 rounded font-medium transition bg-emerald-600 text-white shadow">
+            🇮🇳 हिन्दी
+          </button>
+          <button id="btn-lang-en" onclick="setLanguage('en-IN')" class="px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white">
+            🇬🇧 English
+          </button>
+        </div>
+
+        <!-- Sample Case Selectors -->
+        <div class="flex items-center gap-1.5 bg-slate-800/80 p-1 rounded-lg border border-slate-700/80 text-xs">
+          <span class="text-slate-400 px-1.5 font-medium">Cases:</span>
+          <button onclick="loadSample('incomplete')" class="px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-medium transition" title="Missing Income Proof">
+            ⚡ Case 2 (Hero: 75%)
+          </button>
+          <button onclick="loadSample('complete')" class="px-2 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition" title="All documents verified">
+            Case 1 (100%)
+          </button>
+          <button onclick="loadSample('ineligible')" class="px-2 py-1 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition" title="Income over 2.5L">
+            Case 3 (Failed)
+          </button>
+        </div>
+
+        <button onclick="loadSample('incomplete')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" title="Reset State">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Live Progress Bar & Blocker Banner -->
+    <div class="max-w-7xl mx-auto mt-3 pt-3 border-t border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+      <div class="flex-1 max-w-lg">
+        <div class="flex justify-between items-center mb-1">
+          <span id="progress-label" class="font-semibold text-slate-300">3 of 4 Required Documents Verified (75%)</span>
+          <span id="progress-pct" class="font-bold text-emerald-400">75%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden border border-slate-700">
+          <div id="progress-bar" class="bg-gradient-to-r from-teal-500 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out" style="width: 75%"></div>
+        </div>
+      </div>
+
+      <div id="blocker-banner" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300">
+        <svg class="w-4 h-4 flex-shrink-0 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+        <span id="blocker-text" class="font-medium">Action Needed: Official Tehsildar Income Certificate is missing.</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 3-Panel Content Area -->
+  <main class="max-w-7xl mx-auto w-full flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- PANEL 1: REQUIREMENTS CHECKLIST (Left - 4 Cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-md flex-1 flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </span>
+            <h2 class="font-bold text-sm text-slate-100 uppercase tracking-wide">1. Requirements</h2>
+          </div>
+          <span class="text-[11px] text-slate-400">Click to Inspect</span>
+        </div>
+
+        <!-- Requirements List -->
+        <div id="requirements-container" class="space-y-3 flex-1 overflow-y-auto pr-1">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Scheme Guidelines Info Note -->
+        <div class="mt-4 p-3 rounded-xl bg-slate-850 border border-slate-750 text-xs text-slate-400 space-y-1">
+          <p class="font-medium text-slate-300">Scheme: Pradhan Mantri Post-Matric</p>
+          <p>Rules require both numeric threshold satisfaction and certified document evidence from authorized officers.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2: EVIDENCE INSPECTOR (Center - 4 Cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- Change 1: Traceable Evidence Card -->
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-md flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </span>
+            <h2 class="font-bold text-sm text-slate-100 uppercase tracking-wide">2. Evidence Inspector</h2>
+          </div>
+          <span id="evidence-type-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            Verified Document
+          </span>
+        </div>
+
+        <div id="evidence-card-content" class="space-y-3">
+          <!-- Title & Document Header -->
+          <div>
+            <h3 id="ev-rule-title" class="font-bold text-sm text-white">Family Income Ceiling (≤ ₹2,50,000)</h3>
+            <p id="ev-doc-source" class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>Source: <strong class="text-slate-200">income_certificate_ramesh.pdf</strong> (Page 1)</span>
+            </p>
+          </div>
+
+          <!-- Quoted Supporting Passage -->
+          <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-750">
+            <span class="text-[10px] uppercase tracking-wider text-slate-500 font-bold block mb-1">Extracted Source Passage (Sarvam Vision/105B)</span>
+            <p id="ev-extracted-quote" class="text-xs font-mono text-emerald-300 leading-relaxed italic bg-emerald-950/20 p-2 rounded border-l-2 border-emerald-500">
+              "...कुल वार्षिक आय रु 1,80,000 (एक लाख अस्सी हज़ार) प्रमाणित की जाती है..."
+            </p>
+          </div>
+
+          <!-- Institutional Distinction Note -->
+          <div class="p-2.5 rounded-lg bg-slate-850 border border-slate-750 text-xs text-slate-400" id="ev-notes">
+            Verified from Class XII Senior School Certificate Examination.
+          </div>
+        </div>
+
+        <!-- Change 4: Hero Blocker Resolution Action Trigger -->
+        <div class="mt-4 pt-3 border-t border-slate-700">
+          <button id="btn-hero-resolve" onclick="resolveHeroBlocker()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 font-bold text-xs text-slate-950 shadow-md shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <span>⚡ Resolve Blocker: Upload Tehsildar Certificate</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Voice & Clarification Assistant -->
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-md flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-purple-500/10 text-purple-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+            </span>
+            <h3 class="font-bold text-xs uppercase tracking-wide text-slate-200">Sarvam Voice (Bulbul & Saaras)</h3>
+          </div>
+        </div>
+
+        <!-- Speak Advice Button (Bulbul) -->
+        <button id="btn-speak-advice" onclick="playVoiceAdvice()" class="w-full py-2 px-3 rounded-xl bg-slate-700 hover:bg-slate-600 border border-slate-600 text-xs text-slate-100 font-medium transition flex items-center justify-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+          <span id="txt-speak-advice">🔊 सुनो (Explain What I Need in Hindi)</span>
+        </button>
+
+        <!-- Oral Clarification Input (Saaras STT or Text) -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-medium text-slate-400">Answer Clarification / State Fact:</label>
+          <div class="flex gap-1.5">
+            <input type="text" id="clarify-input" placeholder="e.g. Our family income is ₹1.8 lakh..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <button onclick="submitClarification()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold text-white transition">
+              Send
+            </button>
+            <button id="btn-mic" onclick="simulateVoiceMic()" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-xs text-white transition flex items-center justify-center" title="Speak via Saaras STT">
+              🎤
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-500 italic">*Demonstrates self-reported statement vs documentary certificate distinction.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 3: LIVE APPLICATION DRAFT (Right - 4 Cols) -->
+    <section class="lg:col-span-4 flex flex-col gap-4">
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-md flex-1 flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-700 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-teal-500/10 text-teal-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </span>
+            <h2 class="font-bold text-sm text-slate-100 uppercase tracking-wide">3. Application Draft</h2>
+          </div>
+          <span id="draft-status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            DRAFT PENDING
+          </span>
+        </div>
+
+        <!-- Official Form Container -->
+        <div class="bg-slate-900 border border-slate-750 rounded-xl p-4 flex-1 flex flex-col space-y-3.5 overflow-y-auto">
+          <!-- Form Header -->
+          <div class="border-b border-slate-800 pb-2.5 text-center">
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Government of India · NSP Portal</p>
+            <p class="text-xs font-bold text-emerald-400">Post-Matric Scholarship Scheme 2026</p>
+            <p class="text-[10px] font-mono text-slate-500">Application ID: PMS-2026-UP-8841</p>
+          </div>
+
+          <!-- Live Form Fields -->
+          <div id="draft-fields-container" class="space-y-2.5 text-xs">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Download Action Button -->
+        <div class="mt-4 pt-3 border-t border-slate-700">
+          <button id="btn-download" disabled class="w-full py-2.5 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-slate-700 text-slate-400 cursor-not-allowed">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span id="txt-download">Download Application Packet (PDF)</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Audio Element for Bulbul TTS playback -->
+  <audio id="audio-player" class="hidden"></audio>
+
+  <!-- Frontend Logic -->
+  <script>
+    let appState = null;
+    let selectedRuleId = "income";
+    let currentLanguage = "hi-IN";
+
+    async function fetchState() {
+      try {
+        const res = await fetch('/api/state');
+        appState = await res.json();
+        renderUI();
+      } catch (err) {
+        console.error("Error fetching state:", err);
+      }
+    }
+
+    function renderUI() {
+      if (!appState) return;
+
+      // 1. Progress Bar
+      const pct = appState.progress_percent || 0;
+      const bar = document.getElementById('progress-bar');
+      bar.style.width = pct + '%';
+      document.getElementById('progress-pct').innerText = pct + '%';
+      document.getElementById('progress-label').innerText = appState.progress_label;
+
+      // 2. Blocker Banner
+      const banner = document.getElementById('blocker-banner');
+      const blockerText = document.getElementById('blocker-text');
+      if (appState.active_blocker) {
+        banner.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300";
+        blockerText.innerText = appState.active_blocker;
+        banner.style.display = 'flex';
+      } else if (pct === 100) {
+        banner.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300";
+        blockerText.innerText = "All requirements verified! Application draft is finalized.";
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
+      }
+
+      // 3. Render Requirements (Panel 1)
+      const reqContainer = document.getElementById('requirements-container');
+      reqContainer.innerHTML = '';
+      appState.requirements.forEach(req => {
+        const isSelected = req.id === selectedRuleId;
+        const card = document.createElement('div');
+        
+        let statusColor = "border-slate-700 bg-slate-850";
+        let badgeColor = "bg-slate-700 text-slate-300";
+        let icon = `<span class="text-slate-400">⚪</span>`;
+
+        if (req.status === "PASSED") {
+          statusColor = isSelected ? "border-emerald-500 bg-emerald-950/20" : "border-slate-700 bg-slate-850 hover:border-slate-600";
+          badgeColor = "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+          icon = `<svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>`;
+        } else if (req.status === "BLOCKER") {
+          statusColor = isSelected ? "border-amber-500 bg-amber-950/20" : "border-amber-500/50 bg-slate-850 hover:border-amber-400";
+          badgeColor = "bg-amber-500/15 text-amber-300 border border-amber-500/40";
+          icon = `<svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>`;
+        } else if (req.status === "FAILED") {
+          statusColor = isSelected ? "border-rose-500 bg-rose-950/20" : "border-rose-500/50 bg-slate-850";
+          badgeColor = "bg-rose-500/15 text-rose-300 border border-rose-500/40";
+          icon = `<svg class="w-4 h-4 text-rose-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>`;
+        }
+
+        card.className = `p-3 rounded-xl border ${statusColor} cursor-pointer transition shadow-sm`;
+        card.onclick = () => { selectedRuleId = req.id; renderUI(); };
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2">
+              ${icon}
+              <h4 class="font-semibold text-xs text-slate-200">${req.title}</h4>
+            </div>
+            <span class="text-[10px] font-medium px-2 py-0.5 rounded-full ${badgeColor}">${req.badge}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1 pl-6">${req.detail}</p>
+        `;
+        reqContainer.appendChild(card);
+      });
+
+      // 4. Render Evidence Card (Panel 2)
+      const evCard = appState.evidence_cards[selectedRuleId] || appState.evidence_cards["income"];
+      if (evCard) {
+        document.getElementById('ev-rule-title').innerText = evCard.rule_title;
+        document.getElementById('ev-doc-source').innerHTML = `
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Source: <strong class="text-slate-200">${evCard.document_name}</strong> (Page ${evCard.page})</span>
+        `;
+        document.getElementById('ev-extracted-quote').innerText = `"${evCard.extracted_quote}"`;
+        document.getElementById('ev-notes').innerText = evCard.notes;
+
+        const badge = document.getElementById('evidence-type-badge');
+        badge.innerText = evCard.badge_label;
+        if (evCard.evidence_type === "VERIFIED_DOCUMENT") {
+          badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+        } else if (evCard.evidence_type === "UNVERIFIED_STATEMENT") {
+          badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        } else {
+          badge.className = "text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40";
+        }
+      }
+
+      // Hide hero button if income already verified
+      const heroBtn = document.getElementById('btn-hero-resolve');
+      if (appState.evidence_cards["income"] && appState.evidence_cards["income"].verified) {
+        heroBtn.style.display = 'none';
+      } else {
+        heroBtn.style.display = 'flex';
+      }
+
+      // 5. Render Application Draft Fields (Panel 3)
+      const draftContainer = document.getElementById('draft-fields-container');
+      draftContainer.innerHTML = '';
+      Object.keys(appState.draft_fields).forEach(key => {
+        const field = appState.draft_fields[key];
+        const row = document.createElement('div');
+        
+        let valClass = "text-slate-200 font-medium";
+        let statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Verified</span>`;
+        let rowClass = "p-2 rounded-lg bg-slate-850 border border-slate-800";
+
+        if (field.status === "UNRESOLVED_BLOCKER") {
+          rowClass = "p-2 rounded-lg bg-amber-500/10 border border-amber-500/40";
+          valClass = "text-amber-300 font-bold";
+          statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Action Required</span>`;
+        } else if (field.status === "INELIGIBLE_FAILED") {
+          rowClass = "p-2 rounded-lg bg-rose-500/10 border border-rose-500/40";
+          valClass = "text-rose-300 font-bold";
+          statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">Disqualified</span>`;
+        } else if (key === "annual_income" && field.status === "VERIFIED") {
+          rowClass = "p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/60 animate-pulse-green";
+          valClass = "text-emerald-300 font-bold";
+          statusBadge = `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/30 text-emerald-200 font-bold">Verified ✅</span>`;
+        }
+
+        row.className = rowClass;
+        row.innerHTML = `
+          <div class="flex justify-between items-center mb-0.5">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider">${field.label}</span>
+            ${statusBadge}
+          </div>
+          <div class="${valClass} text-xs">${field.value}</div>
+          ${field.note ? `<p class="text-[10px] text-slate-500 mt-0.5">${field.note}</p>` : ''}
+        `;
+        draftContainer.appendChild(row);
+      });
+
+      // Draft Status Badge & Download Button
+      const draftBadge = document.getElementById('draft-status-badge');
+      const downloadBtn = document.getElementById('btn-download');
+      if (pct === 100) {
+        draftBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+        draftBadge.innerText = "FINALIZED & VERIFIED";
+        downloadBtn.disabled = false;
+        downloadBtn.className = "w-full py-2.5 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer";
+        downloadBtn.onclick = () => alert("Downloading verified scholarship application packet (PMS-2026-UP-8841.pdf)...");
+      } else {
+        draftBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        draftBadge.innerText = "DRAFT PENDING";
+        downloadBtn.disabled = true;
+        downloadBtn.className = "w-full py-2.5 px-4 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 bg-slate-700 text-slate-400 cursor-not-allowed";
+      }
+
+      // Voice Advice button text
+      const speakBtnText = document.getElementById('txt-speak-advice');
+      if (currentLanguage === "hi-IN") {
+        speakBtnText.innerText = "🔊 सुनो (Explain What I Need in Hindi)";
+      } else {
+        speakBtnText.innerText = "🔊 Explain What I Need in English";
+      }
+    }
+
+    // Change 4: Core Hero Blocker Resolution
+    async function resolveHeroBlocker() {
+      const btn = document.getElementById('btn-hero-resolve');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-slate-950" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing Tehsildar Certificate...`;
+
+      try {
+        const res = await fetch('/api/resolve-hero-blocker', { method: 'POST' });
+        const data = await res.json();
+        appState = data.state;
+        selectedRuleId = "income";
+        renderUI();
+
+        // Auto-play the celebratory Bulbul voice response
+        if (data.audio_base64) {
+          playBase64Audio(data.audio_base64);
+        }
+      } catch (err) {
+        console.error("Error resolving blocker:", err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>⚡ Resolve Blocker: Upload Tehsildar Certificate</span>`;
+      }
+    }
+
+    // Change 5: Bilingual Language Toggle
+    async function setLanguage(lang) {
+      currentLanguage = lang;
+      const btnHi = document.getElementById('btn-lang-hi');
+      const btnEn = document.getElementById('btn-lang-en');
+
+      if (lang === 'hi-IN') {
+        btnHi.className = "px-2.5 py-1 rounded font-medium transition bg-emerald-600 text-white shadow";
+        btnEn.className = "px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white";
+      } else {
+        btnEn.className = "px-2.5 py-1 rounded font-medium transition bg-emerald-600 text-white shadow";
+        btnHi.className = "px-2.5 py-1 rounded font-medium transition text-slate-400 hover:text-white";
+      }
+
+      await fetch('/api/set-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: lang })
+      });
+      renderUI();
+    }
+
+    // Preset Case Loader
+    async function loadSample(caseId) {
+      try {
+        const res = await fetch(`/api/load-sample/${caseId}`, { method: 'POST' });
+        appState = await res.json();
+        selectedRuleId = "income";
+        renderUI();
+      } catch (err) {
+        console.error("Error loading sample:", err);
+      }
+    }
+
+    // Bulbul TTS Advice Player
+    async function playVoiceAdvice() {
+      const btn = document.getElementById('btn-speak-advice');
+      const origText = btn.innerHTML;
+      btn.innerHTML = `<span class="animate-spin inline-block mr-1">⌛</span> Calling Bulbul...`;
+
+      try {
+        const res = await fetch('/api/speak-advice', { method: 'POST' });
+        const data = await res.json();
+        if (data.audio_base64) {
+          playBase64Audio(data.audio_base64);
+        } else {
+          alert(data.text);
+        }
+      } catch (err) {
+        console.error("TTS error:", err);
+      } finally {
+        btn.innerHTML = origText;
+      }
+    }
+
+    function playBase64Audio(b64) {
+      const audio = document.getElementById('audio-player');
+      audio.src = "data:audio/wav;base64," + b64;
+      audio.play().catch(e => console.log("Audio play error:", e));
+    }
+
+    // Clarification Submissions
+    async function submitClarification() {
+      const input = document.getElementById('clarify-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      try {
+        const res = await fetch('/api/clarify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: val })
+        });
+        const data = await res.json();
+        appState = data.state;
+        selectedRuleId = "income";
+        renderUI();
+        input.value = '';
+      } catch (err) {
+        console.error("Error submitting clarification:", err);
+      }
+    }
+
+    function simulateVoiceMic() {
+      const input = document.getElementById('clarify-input');
+      if (currentLanguage === "hi-IN") {
+        input.value = "हमारे परिवार की समस्त स्रोतों से कुल आय 1.8 लाख रुपये है।";
+      } else {
+        input.value = "Our total family annual income from all sources is 1.8 lakh rupees.";
+      }
+      submitClarification();
+    }
+
+    // Initial Load
+    fetchState();
+  </script>
+</body>
+</html>
